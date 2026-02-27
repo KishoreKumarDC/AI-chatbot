@@ -1,0 +1,405 @@
+<html>
+<head>
+<title>AI Chatbot Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+.ai-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: 0.3s ease;
+}
+
+.ai-btn img {
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+}
+
+.ai-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+.ai-btn:active {
+    transform: scale(0.98);
+}
+
+:root{
+ --bg:#000000;
+ --panel:#E5E5E5;
+ --text:#000000;
+ --border:#CFCFCF;
+ --accent:#E5E5E5;
+}
+.light{
+ --bg:#E5E5E5;
+ --panel:#000000;
+ --text:#E5E5E5;
+ --border:#000000;
+ --accent:#000000;
+}
+
+/* -------- Animated Background -------- */
+body::before{
+ content:"";
+ position:fixed;
+ inset:0;
+ background:
+  radial-gradient(circle at 20% 20%, #2a2a2a, transparent 40%),
+  radial-gradient(circle at 80% 30%, #1f1f1f, transparent 40%),
+  radial-gradient(circle at 50% 80%, #262626, transparent 40%);
+ animation: floatBg 18s linear infinite;
+ z-index:-1;
+}
+
+@keyframes floatBg{
+ 0%{transform:translateY(0)}
+ 50%{transform:translateY(-20px)}
+ 100%{transform:translateY(0)}
+} 
+
+body{
+ margin:0;
+ font-family:Segoe UI,Arial;
+ background:var(--bg);
+ color:var(--accent);
+ display:flex;
+ height:100vh;
+ font-weight:600;
+}
+
+.sidebar{
+ width:220px;
+ background:var(--panel);
+ border-right:1px solid var(--border);
+ padding:16px;
+}
+
+.sidebar h2{
+ margin-bottom:20px;
+ color:var(--text);
+}
+
+.sidebar button{
+ width:100%;
+ padding:10px;
+ margin-bottom:10px;
+ background:transparent;
+ color:var(--text);
+ border:1px solid var(--border);
+ border-radius:8px;
+ cursor:pointer;
+ text-align:left;
+}
+
+.sidebar button:hover{
+ background:#CFCFCF;
+}
+
+.main{
+ flex:1;
+ display:flex;
+ flex-direction:column;
+}
+
+.header{
+ padding:14px;
+ border-bottom:1px solid var(--border);
+ display:flex;
+ justify-content:space-between;
+}
+
+.logout-btn{
+ padding:8px 14px;
+ border:none;
+ border-radius:8px;
+ cursor:pointer;
+ font-weight:700;
+ background:#000;
+ color:#E5E5E5;
+ transition:.2s ease;
+}
+
+.logout-btn:hover{
+ background:#222;
+ transform:translateY(-2px);
+}
+
+
+.content{
+ flex:1;
+ padding:20px;
+}
+
+.card{
+ background:var(--panel);
+ color:var(--text);
+ border:1px solid var(--border);
+ padding:16px;
+ border-radius:12px;
+ margin-bottom:20px;
+} 
+
+
+iframe{
+ width:100%;
+ height:520px;
+ border:none;
+ border-radius:12px;
+}
+
+.toggle{
+ cursor:pointer;
+ font-weight:700;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.3s ease;
+}
+
+.tab-btn img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.tab-btn:hover {
+    background-color: #0077b5;
+}
+
+
+
+.tg-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: 0.3s ease;
+}
+
+.tg-btn img {
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+}
+
+.tg-btn:hover {
+    background-color: #0077b5;
+    transform: scale(1.05);
+}
+
+.tg-btn:active {
+    transform: scale(0.98);
+}
+
+
+.logo-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 600;
+    color: white;   /* change if your sidebar is light */
+}
+
+.logo-title img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+
+/* ================= 3D ROBOTIC BACKGROUND ================= */
+
+canvas#robot-bg{
+ position:fixed;
+ top:0;
+ left:0;
+ width:100%;
+ height:100%;
+ z-index:-10;
+ background:#000;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+<h2 class="logo-title">
+    <img src="/static/ai_face_logo.jpeg" alt="AI Logo">
+    AI Dashboard
+</h2>
+ <!-- <h2>🤖 AI Dashboard</h2> -->
+ <button onclick="tab('home')">🏠 Overview</button>
+ <button onclick="tab('chat')">💬 Web Chat</button>
+ <button class="tab-btn" onclick="tab('telegram')">
+    <img src="/static/telegram_logo.jpg" alt="Telegram">
+    Telegram
+</button>
+ <form method="post" action="/launch-ai">
+    <button type="submit" class="ai-btn">
+        <img src="/static/ai_logo.jpg" alt="AI Logo">
+        Open Desktop AI
+    </button>
+</form>
+<form method="post" action="/close-ai">
+    <button type="submit">❌ Close Desktop AI</button>
+</form>
+</div>
+
+<div class="main" id="app">
+ <div class="header">
+   <div>AI Chatbot Control Panel</div>
+
+   <div style="display:flex;gap:15px;align-items:center;">
+       <div class="toggle" onclick="theme()">🌗</div>
+
+       <button class="logout-btn"
+        onclick="window.location.href='/logout'">
+        🚪 Logout
+       </button>
+   </div>
+</div>
+
+
+ <div class="content">
+   <div id="home" class="tab">
+     <div class="card">
+       <h3>Project Status</h3>
+       <p><b>Model:</b> TinyLLaMA (Offline) + groq Api model</p>
+       <p><b>Backend:</b> FastAPI</p>
+       <p><b>Platforms:</b> Web + Telegram + Floating Ai chatbot</p>
+       <p><b>Status:</b> Running ✅</p>
+     </div>
+   </div>
+
+
+   <div id="chat" class="tab" style="display:none">
+     <iframe src="/chat-ui"></iframe>
+   </div>
+
+
+   <div id="telegram" class="tab" style="display:none">
+     <div class="card">
+       <h3>📲 Telegram Bot</h3>
+       <p>Chat with the AI directly on Telegram</p>
+       <button class="tg-btn"
+        onclick="window.open('https://t.me/ai_socail_chatbot_bot','_blank')">
+    <img src="/static/telegram_logo.jpg" alt="Telegram Logo">
+    Open Telegram Bot
+</button>
+       <p style="margin-top:10px;font-size:14px;">
+        Username: <b>@ai_socail_chatbot_bot</b>
+       </p>
+     </div>
+   </div>
+ </div>
+</div>
+
+
+<script>
+function tab(id){
+ document.querySelectorAll(".tab").forEach(t=>t.style.display="none");
+ document.getElementById(id).style.display="block";
+}
+function theme(){
+ app.classList.toggle("light");
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+<script>
+/* ===== 3D ROBOTIC PARTICLE NETWORK BACKGROUND ===== */
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(
+ 75,
+ window.innerWidth / window.innerHeight,
+ 0.1,
+ 1000
+);
+
+const renderer = new THREE.WebGLRenderer({ alpha:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.domElement.id = "robot-bg";
+document.body.appendChild(renderer.domElement);
+
+/* Create particles */
+const particleCount = 1000;
+const geometry = new THREE.BufferGeometry();
+const positions = new Float32Array(particleCount * 3);
+
+for(let i=0;i<particleCount*3;i++){
+ positions[i] = (Math.random() - 0.5) * 100;
+}
+
+geometry.setAttribute(
+ 'position',
+ new THREE.BufferAttribute(positions,3)
+);
+
+const material = new THREE.PointsMaterial({
+ color:0xffffff,
+ size:0.3
+});
+
+const particles = new THREE.Points(geometry, material);
+scene.add(particles);
+
+camera.position.z = 50;
+
+/* Animation */
+function animate(){
+ requestAnimationFrame(animate);
+
+ particles.rotation.x += 0.0005;
+ particles.rotation.y += 0.001;
+
+ renderer.render(scene,camera);
+}
+
+animate();
+
+/* Responsive */
+window.addEventListener('resize',()=>{
+ camera.aspect = window.innerWidth / window.innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+</html>

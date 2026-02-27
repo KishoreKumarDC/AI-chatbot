@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Web Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+ margin:0;
+ font-family:Arial;
+ background:#000;
+ color:#E5E5E5;
+ font-weight:600;
+ overflow:hidden;
+}
+
+/* Animated Background */
+body::before{
+ content:"";
+ position:fixed;
+ inset:0;
+ background:linear-gradient(45deg,#000,#111,#000);
+ background-size:400% 400%;
+ animation:bgMove 15s ease infinite;
+ z-index:-1;
+}
+
+@keyframes bgMove{
+ 0%{background-position:0% 50%;}
+ 50%{background-position:100% 50%;}
+ 100%{background-position:0% 50%;}
+}
+
+.chat{
+ height:100vh;
+ display:flex;
+ flex-direction:column;
+}
+
+.msgs{
+ flex:1;
+ padding:14px;
+ overflow:auto;
+ scroll-behavior:smooth;
+}
+
+/* Message Animation */
+.msg{
+ display:flex;
+ gap:8px;
+ margin-bottom:12px;
+ opacity:0;
+ transform:translateY(20px);
+ animation:fadeSlide .4s ease forwards;
+}
+
+@keyframes fadeSlide{
+ to{
+  opacity:1;
+  transform:translateY(0);
+ }
+}
+
+.user{ justify-content:flex-end; }
+
+.avatar{
+ width:32px;
+ height:32px;
+ border-radius:50%;
+ background:#E5E5E5;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#000;
+}
+
+.bubble{
+ padding:12px 16px;
+ border-radius:16px;
+ max-width:70%;
+ white-space:pre-wrap;
+}
+
+.user .bubble{
+ background:#E5E5E5;
+ color:#000;
+}
+
+.bot .bubble{
+ background:#222;
+ color:#E5E5E5;
+}
+
+.input{
+ display:flex;
+ padding:12px;
+ border-top:1px solid #333;
+ backdrop-filter:blur(6px);
+}
+
+input{
+ flex:1;
+ padding:10px;
+ border-radius:8px;
+ border:1px solid #444;
+ background:#111;
+ color:#E5E5E5;
+ transition:.3s;
+}
+
+input:focus{
+ outline:none;
+ border-color:#E5E5E5;
+ box-shadow:0 0 8px #E5E5E5;
+}
+
+button{
+ margin-left:6px;
+ padding:10px;
+ border:none;
+ border-radius:8px;
+ cursor:pointer;
+ background:#E5E5E5;
+ color:#000;
+ transition:.2s;
+ font-weight:600;
+}
+
+button:hover{
+ background:#CFCFCF;
+ transform:translateY(-2px);
+}
+
+button:active{
+ transform:scale(.95);
+}
+
+.clear{
+ margin:10px;
+ padding:8px 14px;
+ background:#E5E5E5;
+ color:#000;
+ border-radius:8px;
+ cursor:pointer;
+ font-weight:700;
+ width:140px;
+}
+
+.typing{
+ font-size:13px;
+ opacity:0.7;
+ font-style:italic;
+ display:flex;
+ align-items:center;
+ gap:6px;
+}
+
+.dots span{
+ animation: blink 1.4s infinite both;
+}
+.dots span:nth-child(2){ animation-delay:.2s; }
+.dots span:nth-child(3){ animation-delay:.4s; }
+
+@keyframes blink{
+ 0%{opacity:.2}
+ 20%{opacity:1}
+ 100%{opacity:.2}
+}
+
+/* Voice Button Active */
+.voice-active{
+ background:#ff4c4c !important;
+ color:white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat">
+ <button class="clear" onclick="clearChat()">🗑 Clear Chat</button>
+
+ <div class="msgs" id="msgs"></div>
+
+ <div class="input">
+  <input type="file" id="imageInput" accept="image/*">
+<button onclick="sendImage()">📷</button>
+
+
+  <input id="txt" placeholder="Type a message..."
+   onkeydown="if(event.key==='Enter')send()"/>
+  <button onclick="startVoice()" id="voiceBtn">🎤</button>
+  <button onclick="send()">Send</button>
+ </div>
+</div>
+
+<!-- <script>
+
+const API_BASE = "http://127.0.0.1:8000";
+
+const msgs = document.getElementById("msgs");
+const txt = document.getElementById("txt");
+const voiceBtn = document.getElementById("voiceBtn");
+
+/* ================= IMAGE UPLOAD ================= */
+async function sendImage(){
+    const fileInput = document.getElementById("imageInput");
+    const file = fileInput.files[0];
+
+    if(!file){
+        alert("Please select an image");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    typing();
+
+    try{
+        const response = await fetch("/image-analyze", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        stopTyping();
+
+        add("📷 Image uploaded", true);
+
+        if(data.analysis){
+            add(data.analysis, false, true);
+        } else {
+            add("⚠ Unable to analyze image.", false);
+        }
+
+    } catch(err){
+        stopTyping();
+        add("⚠ Backend connection error.", false);
+    }
+}
+
+/* ================= ADD MESSAGE ================= */
+function add(text, user, animate=false){
+    const d = document.createElement("div");
+    d.className = "msg " + (user ? "user" : "bot");
+
+    const a = document.createElement("div");
+    a.className = "avatar";
+    a.textContent = user ? "👤" : "🤖";
+
+    const b = document.createElement("div");
+    b.className = "bubble";
+
+    user ? d.append(b,a) : d.append(a,b);
+    msgs.appendChild(d);
+
+    if(animate){
+        typeEffect(b,text);
+    } else {
+        b.textContent = text;
+    }
+
+    msgs.scrollTop = msgs.scrollHeight;
+    saveChat();
+}
+
+/* ================= TYPE EFFECT ================= */
+function typeEffect(element,text){
+    let i=0;
+    element.textContent="";
+    const speed=15;
+
+    function typingAnim(){
+        if(i<text.length){
+            element.textContent+=text.charAt(i);
+            i++;
+            msgs.scrollTop=msgs.scrollHeight;
+            setTimeout(typingAnim,speed);
+        }
+    }
+    typingAnim();
+}
+
+/* ================= TYPING INDICATOR ================= */
+function typing(){
+    const t=document.createElement("div");
+    t.id="typing";
+    t.className="typing";
+    t.innerHTML="🤖 Bot is typing...";
+    msgs.appendChild(t);
+    msgs.scrollTop=msgs.scrollHeight;
+}
+
+function stopTyping(){
+    const t=document.getElementById("typing");
+    if(t) t.remove();
+}
+
+/* ================= SAVE CHAT ================= */
+function saveChat(){
+    localStorage.setItem("chat_history", msgs.innerHTML);
+}
+
+function loadChat(){
+    const h = localStorage.getItem("chat_history");
+    if(h){
+        msgs.innerHTML = h;
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+}
+
+function clearChat(){
+    msgs.innerHTML="";
+    localStorage.removeItem("chat_history");
+}
+
+/* ================= SEND TEXT ================= */
+async function send(){
+    if(!txt.value.trim()) return;
+
+    const userText = txt.value;
+    add(userText,true);
+    txt.value="";
+    typing();
+
+    try{
+        const r = await fetch("/chat-api",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({message:userText})
+        });
+
+        const d = await r.json();
+        stopTyping();
+
+        if(d.reply){
+            add(d.reply,false,true);
+        } else {
+            add("⚠ AI error.", false);
+        }
+
+    } catch(err){
+        stopTyping();
+        add("⚠ Backend connection error.", false);
+    }
+}
+
+/* ================= VOICE ================= */
+function startVoice(){
+    if(!('webkitSpeechRecognition' in window)){
+        alert("Voice recognition not supported in this browser.");
+        return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang="en-US";
+    recognition.start();
+
+    voiceBtn.classList.add("voice-active");
+
+    recognition.onresult=function(event){
+        txt.value=event.results[0][0].transcript;
+    };
+
+    recognition.onend=function(){
+        voiceBtn.classList.remove("voice-active");
+    };
+}
+
+loadChat();
+
+</script> -->
+<script>
+
+async function sendImage(){
+    const fileInput = document.getElementById("imageInput");
+    const file = fileInput.files[0];
+
+    if(!file){
+        alert("Please select an image");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    typing();
+
+    const response = await fetch("/image-chat", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    stopTyping();
+    add("📷 Image uploaded", true);
+    add(data.reply, false);
+}
+
+const msgs=document.getElementById("msgs");
+const txt=document.getElementById("txt");
+const voiceBtn=document.getElementById("voiceBtn");
+
+/* Add Message */
+function add(text,user,animate=false){
+ const d=document.createElement("div");
+ d.className="msg "+(user?"user":"bot");
+
+ const a=document.createElement("div");
+ a.className="avatar";
+ a.textContent=user?"👤":"🤖";
+
+ const b=document.createElement("div");
+ b.className="bubble";
+
+ user ? d.append(b,a) : d.append(a,b);
+ msgs.appendChild(d);
+
+ if(animate){
+   typeEffect(b,text);
+ } else {
+   b.textContent=text;
+ }
+
+ msgs.scrollTop=msgs.scrollHeight;
+ saveChat();
+}
+
+/* Letter Animation */
+function typeEffect(element,text){
+ let i=0;
+ element.textContent="";
+ const speed=15;
+
+ function typing(){
+   if(i<text.length){
+     element.textContent+=text.charAt(i);
+     i++;
+     msgs.scrollTop=msgs.scrollHeight;
+     setTimeout(typing,speed);
+   }
+ }
+ typing();
+}
+
+/* Typing Indicator */
+function typing(){
+ const t=document.createElement("div");
+ t.id="typing";
+ t.className="typing";
+ t.innerHTML = `🤖 Bot is typing <span class="dots"><span>.</span><span>.</span><span>.</span></span>`;
+ msgs.appendChild(t);
+ msgs.scrollTop=msgs.scrollHeight;
+}
+
+function stopTyping(){
+ const t=document.getElementById("typing");
+ if(t) t.remove();
+}
+
+/* Save Chat */
+function saveChat(){
+ localStorage.setItem("chat_history", msgs.innerHTML);
+}
+
+function loadChat(){
+ const h = localStorage.getItem("chat_history");
+ if(h){
+   msgs.innerHTML = h;
+   msgs.scrollTop = msgs.scrollHeight;
+ }
+}
+
+function clearChat(){
+ msgs.innerHTML="";
+ localStorage.removeItem("chat_history");
+}
+
+/* Send Message */
+
+ async function send(){
+  if(!txt.value.trim()) return;
+
+  const userText = txt.value;
+  add(userText,true);
+  txt.value="";
+  typing();
+
+  const r=await fetch("/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:userText})
+  });
+
+  const d=await r.json();
+  stopTyping();
+  add(d.reply,false,true);
+ }
+
+/* Voice Search */
+function startVoice(){
+ if(!('webkitSpeechRecognition' in window)){
+   alert("Voice recognition not supported in this browser.");
+   return;
+ }
+
+ const recognition = new webkitSpeechRecognition();
+ recognition.lang="en-US";
+ recognition.start();
+
+ voiceBtn.classList.add("voice-active");
+
+ recognition.onresult=function(event){
+   txt.value=event.results[0][0].transcript;
+ };
+
+ recognition.onend=function(){
+   voiceBtn.classList.remove("voice-active");
+ };
+}
+
+loadChat();
+</script>
+
+</body>
+</html>
