@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 from groq import Groq
-from serpapi.google_search import GoogleSearch
+from serpapi import GoogleSearch
 
 # =============================
 # BASIC CONFIG
