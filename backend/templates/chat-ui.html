@@ -372,8 +372,8 @@ loadChat();
 
 </script> -->
 <script>
-
 async function sendImage(){
+
     const fileInput = document.getElementById("imageInput");
     const file = fileInput.files[0];
 
@@ -385,8 +385,6 @@ async function sendImage(){
     const formData = new FormData();
     formData.append("file", file);
 
-    typing();
-
     const response = await fetch("/image-chat", {
         method: "POST",
         body: formData
@@ -394,14 +392,9 @@ async function sendImage(){
 
     const data = await response.json();
 
-    stopTyping();
     add("📷 Image uploaded", true);
     add(data.reply, false);
 }
-
-const msgs=document.getElementById("msgs");
-const txt=document.getElementById("txt");
-const voiceBtn=document.getElementById("voiceBtn");
 
 /* Add Message */
 function add(text,user,animate=false){

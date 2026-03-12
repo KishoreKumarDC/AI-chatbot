@@ -1,9 +1,9 @@
 fastapi
 uvicorn
-gunicorn
 jinja2
 python-multipart
 requests
 groq
 python-dotenv
-python-telegram-bot==20.7
+serpapi
+pillow

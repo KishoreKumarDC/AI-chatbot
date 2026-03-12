@@ -20,7 +20,7 @@ To design and develop an AI chatbot that can:
 
 - **Python 3.10**
 - **FastAPI** – backend REST API
-- **TinyLLaMA (via Ollama)** – local AI language model
+- **TinyLLaMA (via Ollama) + groq API + Serp API** – local AI language model
 - **Telegram Bot API**
 - **Uvicorn** – ASGI server
 - **dotenv** – environment variable handling
