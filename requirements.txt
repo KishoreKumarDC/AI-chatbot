@@ -3,7 +3,7 @@ uvicorn
 jinja2
 python-multipart
 requests
-groq
 python-dotenv
+groq
 serpapi
-pillow
+python-telegram-bot
