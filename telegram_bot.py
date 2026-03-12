@@ -13,7 +13,9 @@
 # # load_dotenv()
 
 # # BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-# # API_URL = "http://127.0.0.1:8000/chat"
+# # # API_URL = "http://127.0.0.1:8000/chat"
+# # API_URL ="https://ai-socail-chatbot-86on.onrender.com"
+
 
 # #  # /start command
 # # async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
