@@ -365,4 +365,3 @@ def close_ai():
 
     return RedirectResponse("/dashboard", status_code=303)
 
-print("HF KEY:", HF_API_KEY)
