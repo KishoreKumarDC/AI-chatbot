@@ -16,7 +16,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 # Local backend API
-API_URL ="https://ai-socail-chatbot-86on.onrender.com"
+API_URL = "https://ai-socail-chatbot-86on.onrender.com/chat"
 
 # -------------------------
 # /start command
