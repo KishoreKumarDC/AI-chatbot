@@ -5,5 +5,6 @@ python-multipart
 requests
 python-dotenv
 groq
+serpapi
 google-search-results
 python-telegram-bot

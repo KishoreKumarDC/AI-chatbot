@@ -3,7 +3,6 @@
 <head>
 <title>Admin Login | AI Social Chatbot</title>
 <style>
-
 /* ===== RESET ===== */
 *{
  margin:0;
@@ -97,14 +96,25 @@ body::before{
  to{box-shadow:0 0 35px rgba(127,90,240,.8);}
 }
 
-/* ===== TEXT ===== */
+/* ===== ERROR MESSAGE ===== */
+#error-msg {
+    color: #ff4d4d;
+    background: rgba(255, 77, 77, 0.1);
+    padding: 8px;
+    border-radius: 5px;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 15px;
+    display: none; /* Hidden by default */
+    border: 1px solid rgba(255, 77, 77, 0.3);
+}
+
 .box h2{
  text-align:center;
  margin-bottom:20px;
  letter-spacing:1px;
 }
 
-/* ===== INPUTS ===== */
 input{
  width:100%;
  padding:12px;
@@ -121,7 +131,6 @@ input::placeholder{
  color:#ccc;
 }
 
-/* ===== BUTTON ===== */
 button{
  width:100%;
  margin-top:18px;
@@ -140,7 +149,6 @@ button:hover{
  box-shadow:0 8px 25px rgba(127,90,240,.6);
 }
 
-/* ===== LINK ===== */
 a{
  display:block;
  text-align:center;
@@ -153,7 +161,6 @@ a{
 a:hover{
  color:#fff;
 }
-
 </style>
 </head>
 
@@ -166,15 +173,62 @@ One AI. Multiple Platforms. Unlimited Possibilities.
 
 <div class="box">
  <h2>🔐 Secure Login</h2>
+ 
+ <div id="error-msg">Incorrect username or password.</div>
 
- <form method="post" action="/login">
-  <input name="username" placeholder="Username" required>
-  <input name="password" type="password" placeholder="Password" required>
-  <button type="submit">Login</button>
+ <form id="loginForm">
+  <input name="username" id="username" placeholder="Username" required>
+  <input name="password" id="password" type="password" placeholder="Password" required>
+  <button type="submit" id="loginBtn">Login</button>
  </form>
 
  <a href="/register">New user? Register</a>
 </div>
+
+<script>
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('error-msg');
+    const loginBtn = document.getElementById('loginBtn');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        
+        // Reset UI
+        errorMsg.style.display = 'none';
+        loginBtn.innerText = 'Processing...';
+        loginBtn.style.opacity = '0.7';
+
+        const formData = new FormData(loginForm);
+        const data = new URLSearchParams(formData);
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                body: data,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            // If the login is successful, the server usually redirects (302) 
+            // or sends a 200 OK. If redirected, 'response.redirected' will be true.
+            if (response.ok && !response.url.includes('login')) {
+                window.location.href = response.url || '/dashboard';
+            } else {
+                // If we stay on the login page or get a 401, show the error
+                errorMsg.style.display = 'block';
+                loginBtn.innerText = 'Login';
+                loginBtn.style.opacity = '1';
+            }
+        } catch (error) {
+            console.error("Login Error:", error);
+            errorMsg.innerText = "⚠️ Server error. Try again later.";
+            errorMsg.style.display = 'block';
+            loginBtn.innerText = 'Login';
+            loginBtn.style.opacity = '1';
+        }
+    });
+</script>
 
 </body>
 </html>
