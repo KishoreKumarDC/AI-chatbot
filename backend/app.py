@@ -208,34 +208,90 @@ def login_page(request: Request):
 
 @app.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(
+        "register.html",
+        {"request": request}
+    )
+
 
 @app.post("/register")
-def register(username: str = Form(...), password: str = Form(...)):
+def register(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...)
+):
+
+    # CLEAN INPUT
+    username = username.strip().lower()
+    password = password.strip()
 
     users = load_users()
 
+    # CHECK EXISTING USER
     if username in users:
-        return HTMLResponse("User exists.<br><a href='/register'>Back</a>")
+        return templates.TemplateResponse(
+            "register.html",
+            {
+                "request": request,
+                "error": "⚠ User already exists"
+            }
+        )
 
-    users[username] = {"password": password}
+    # SAVE USER
+    users[username] = {
+        "password": password
+    }
+
     save_users(users)
 
     return RedirectResponse("/", status_code=302)
 
 @app.post("/login")
-def login(username: str = Form(...), password: str = Form(...)):
+def login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...)
+):
+
+    # CLEAN INPUT
+    username = username.strip().lower()
+    password = password.strip()
 
     users = load_users()
 
-    if username in users and users[username]["password"] == password:
+    # INVALID USERNAME
+    if username not in users:
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": "❌ Invalid username or password"
+            }
+        )
 
-        response = RedirectResponse("/dashboard", status_code=302)
-        response.set_cookie("user", username, httponly=True)
+    # INVALID PASSWORD
+    if users[username]["password"] != password:
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": "❌ Invalid username or password"
+            }
+        )
 
-        return response
+    # SUCCESS LOGIN
+    response = RedirectResponse(
+        "/dashboard",
+        status_code=302
+    )
 
-    return HTMLResponse("Invalid login.<br><a href='/'>Try again</a>")
+    response.set_cookie(
+        key="user",
+        value=username,
+        httponly=True
+    )
+
+    return response
 
 @app.get("/logout")
 def logout():
