@@ -185,11 +185,11 @@ def search_images(query):
 
 @app.get("/", response_class=HTMLResponse)
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html")
 
 @app.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request, "register.html")
 
 @app.post("/register")
 def register(
@@ -204,8 +204,8 @@ def register(
 
     if username in users:
         return templates.TemplateResponse(
-            "register.html",
-            {"request": request, "error": "⚠ User already exists"}
+            request, "register.html",
+            {"error": "⚠ User already exists"}
         )
 
     users[username] = {"password": password}
@@ -226,14 +226,14 @@ def login(
 
     if username not in users:
         return templates.TemplateResponse(
-            "login.html",
-            {"request": request, "error": "❌ Invalid username or password"}
+            request, "login.html",
+            {"error": "❌ Invalid username or password"}
         )
 
     if users[username]["password"] != password:
         return templates.TemplateResponse(
-            "login.html",
-            {"request": request, "error": "❌ Invalid username or password"}
+            request, "login.html",
+            {"error": "❌ Invalid username or password"}
         )
 
     response = RedirectResponse("/dashboard", status_code=302)
@@ -256,8 +256,8 @@ def dashboard(request: Request):
     if not user:
         return RedirectResponse("/", status_code=302)
     return templates.TemplateResponse(
-        "dashboard.html",
-        {"request": request, "username": user}
+        request, "dashboard.html",
+        {"username": user}
     )
 
 @app.get("/chat-ui", response_class=HTMLResponse)
@@ -265,7 +265,7 @@ def chat_ui(request: Request):
     user = request.cookies.get("user")
     if not user:
         return RedirectResponse("/", status_code=302)
-    return templates.TemplateResponse("chat-ui.html", {"request": request})
+    return templates.TemplateResponse(request, "chat-ui.html")
 
 # =============================
 # CHAT API
