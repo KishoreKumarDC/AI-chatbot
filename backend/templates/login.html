@@ -7,161 +7,213 @@
 
 /* ===== RESET ===== */
 *{
- margin:0;
- padding:0;
- box-sizing:border-box;
- font-family: Arial, Helvetica, sans-serif;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial, Helvetica, sans-serif;
 }
 
-/* ===== BACKGROUND ===== */
+/* ===== BODY ===== */
 body{
- height:100vh;
- display:flex;
- flex-direction:column;
- justify-content:center;
- align-items:center;
- background:
-   linear-gradient(120deg, rgba(34, 32, 40, 0.25), rgba(0,0,0,.9)),
-   url("https://images.unsplash.com/photo-1677442136019-21780ecad995") center/cover no-repeat;
- overflow:hidden;
- color:#fff;
- position:relative;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  position:relative;
+  color:white;
+
+  background:
+    linear-gradient(120deg, rgba(20,20,30,.6), rgba(0,0,0,.9)),
+    url("https://images.unsplash.com/photo-1677442136019-21780ecad995")
+    center/cover no-repeat;
 }
 
-/* ===== FLOATING AI DOTS ===== */
+/* ===== FLOATING PARTICLES ===== */
 body::before{
- content:"";
- position:absolute;
- inset:0;
- background:
-  radial-gradient(circle at 20% 30%, #7f5af0 2px, transparent 2px),
-  radial-gradient(circle at 80% 60%, #2cb67d 2px, transparent 2px),
-  radial-gradient(circle at 50% 80%, #ffffff 1px, transparent 1px);
- background-size:120px 120px;
- animation: float 20s linear infinite;
- opacity:.3;
+  content:"";
+  position:absolute;
+  inset:0;
+
+  background:
+    radial-gradient(circle at 20% 30%, #7f5af0 2px, transparent 2px),
+    radial-gradient(circle at 80% 60%, #2cb67d 2px, transparent 2px),
+    radial-gradient(circle at 50% 80%, white 1px, transparent 1px);
+
+  background-size:120px 120px;
+
+  animation:floatParticles 18s linear infinite;
+
+  opacity:.35;
 }
 
-@keyframes float{
- from{background-position:0 0;}
- to{background-position:500px 800px;}
+@keyframes floatParticles{
+  from{
+    background-position:0 0;
+  }
+  to{
+    background-position:400px 700px;
+  }
 }
 
-/* ===== 3D HERO TITLE ===== */
+/* ===== HERO TITLE ===== */
 .hero-title{
- font-size:42px;
- font-weight:900;
- text-align:center;
- background:linear-gradient(45deg,#373939,#0c0c0c);
- -webkit-background-clip:text;
- -webkit-text-fill-color:transparent;
- text-shadow:
- 2px 2px 0px #cfd0d0,
- 4px 4px 10px rgba(0,0,0,0.6);
- margin-bottom:10px;
- animation:floatText 3s ease-in-out infinite;
- z-index:1;
+  font-size:46px;
+  font-weight:900;
+  margin-bottom:10px;
+  z-index:1;
+
+  background:linear-gradient(45deg,#ffffff,#8b5cf6);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+
+  animation:titleFloat 3s ease-in-out infinite;
 }
 
-@keyframes floatText{
- 0%{transform:translateY(0px);}
- 50%{transform:translateY(-8px);}
- 100%{transform:translateY(0px);}
+@keyframes titleFloat{
+  0%{
+    transform:translateY(0px);
+  }
+  50%{
+    transform:translateY(-8px);
+  }
+  100%{
+    transform:translateY(0px);
+  }
 }
 
 /* ===== TAGLINE ===== */
 .tagline{
- text-align:center;
- font-size:16px;
- color:#cccccc;
- margin-bottom:30px;
- z-index:1;
+  color:#cccccc;
+  margin-bottom:30px;
+  z-index:1;
+  font-size:15px;
 }
 
 /* ===== LOGIN BOX ===== */
 .box{
- position:relative;
- z-index:1;
- width:340px;
- padding:30px;
- border-radius:14px;
- background:rgba(255,255,255,.08);
- backdrop-filter: blur(12px);
- box-shadow:
-  0 0 25px rgba(127,90,240,.4),
-  inset 0 0 10px rgba(255,255,255,.05);
- animation: glow 3s infinite alternate;
+  width:350px;
+  padding:30px;
+  border-radius:18px;
+
+  background:rgba(255,255,255,.08);
+
+  backdrop-filter:blur(14px);
+
+  border:1px solid rgba(255,255,255,.1);
+
+  box-shadow:
+    0 0 25px rgba(127,90,240,.35),
+    inset 0 0 15px rgba(255,255,255,.05);
+
+  z-index:1;
+
+  animation:glow 3s infinite alternate;
 }
 
 @keyframes glow{
- from{box-shadow:0 0 20px rgba(127,90,240,.4);}
- to{box-shadow:0 0 35px rgba(127,90,240,.8);}
-}
+  from{
+    box-shadow:
+      0 0 20px rgba(127,90,240,.35),
+      inset 0 0 10px rgba(255,255,255,.04);
+  }
 
-/* ===== ERROR MESSAGE ===== */
-#error-msg{
- color:#ff4d4d;
- background:rgba(255,77,77,.1);
- padding:8px;
- border-radius:5px;
- font-size:13px;
- text-align:center;
- margin-bottom:15px;
- display:none;
- border:1px solid rgba(255,77,77,.3);
+  to{
+    box-shadow:
+      0 0 35px rgba(127,90,240,.75),
+      inset 0 0 15px rgba(255,255,255,.08);
+  }
 }
 
 .box h2{
- text-align:center;
- margin-bottom:20px;
- letter-spacing:1px;
+  text-align:center;
+  margin-bottom:20px;
 }
 
+/* ===== INPUT ===== */
 input{
- width:100%;
- padding:12px;
- margin-top:12px;
- border-radius:8px;
- border:none;
- outline:none;
- background:rgba(255,255,255,.12);
- color:#fff;
- font-size:14px;
+  width:100%;
+  padding:13px;
+  margin-top:14px;
+
+  border:none;
+  outline:none;
+
+  border-radius:10px;
+
+  background:rgba(255,255,255,.12);
+
+  color:white;
+
+  font-size:14px;
 }
 
 input::placeholder{
- color:#ccc;
+  color:#d1d5db;
 }
 
+/* ===== BUTTON ===== */
 button{
- width:100%;
- margin-top:18px;
- padding:12px;
- border:none;
- border-radius:8px;
- background:linear-gradient(135deg,#7f5af0,#2cb67d);
- color:#fff;
- font-weight:bold;
- cursor:pointer;
- transition:.3s;
+  width:100%;
+  padding:13px;
+  margin-top:18px;
+
+  border:none;
+  border-radius:10px;
+
+  background:linear-gradient(135deg,#7f5af0,#2cb67d);
+
+  color:white;
+  font-weight:bold;
+  font-size:15px;
+
+  cursor:pointer;
+
+  transition:.3s;
 }
 
 button:hover{
- transform:translateY(-2px);
- box-shadow:0 8px 25px rgba(127,90,240,.6);
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 8px 25px rgba(127,90,240,.6);
 }
 
+/* ===== ERROR ===== */
+.error{
+  background:rgba(255,77,77,.12);
+
+  border:1px solid rgba(255,77,77,.3);
+
+  color:#ff7b7b;
+
+  padding:10px;
+
+  border-radius:8px;
+
+  margin-bottom:15px;
+
+  text-align:center;
+
+  font-size:14px;
+}
+
+/* ===== LINK ===== */
 a{
- display:block;
- text-align:center;
- margin-top:14px;
- color:#ccc;
- text-decoration:none;
- font-size:14px;
+  display:block;
+  text-align:center;
+  margin-top:16px;
+
+  color:#cccccc;
+
+  text-decoration:none;
+
+  transition:.3s;
 }
 
 a:hover{
- color:#fff;
+  color:white;
 }
 
 </style>
@@ -169,7 +221,9 @@ a:hover{
 
 <body>
 
-<h1 class="hero-title">AI Social Assistant</h1>
+<h1 class="hero-title">
+AI Social Assistant
+</h1>
 
 <p class="tagline">
 One AI. Multiple Platforms. Unlimited Possibilities.
@@ -177,98 +231,41 @@ One AI. Multiple Platforms. Unlimited Possibilities.
 
 <div class="box">
 
- <h2>🔐 Secure Login</h2>
+<h2>🔐 Secure Login</h2>
 
- {% if error %}
- <div id="error-msg" style="display:block;">
-     {{ error }}
- </div>
- {% else %}
- <div id="error-msg">
-     Incorrect username or password.
- </div>
- {% endif %}
+{% if error %}
+<div class="error">
+  {{ error }}
+</div>
+{% endif %}
 
- <form id="loginForm" method="post" action="/login">
+<form method="post" action="/login">
 
   <input
+    type="text"
     name="username"
-    id="username"
     placeholder="Username"
     required
   >
 
   <input
-    name="password"
-    id="password"
     type="password"
+    name="password"
     placeholder="Password"
     required
   >
 
-  <button type="submit" id="loginBtn">
+  <button type="submit">
     Login
   </button>
 
- </form>
+</form>
 
- <a href="/register">New user? Register</a>
+<a href="/register">
+New user? Register
+</a>
 
 </div>
-
-<script>
-
-const loginForm = document.getElementById('loginForm');
-const errorMsg = document.getElementById('error-msg');
-const loginBtn = document.getElementById('loginBtn');
-
-loginForm.addEventListener('submit', async (e) => {
-
-    e.preventDefault();
-
-    errorMsg.style.display = 'none';
-
-    loginBtn.innerText = 'Processing...';
-    loginBtn.style.opacity = '0.7';
-
-    const formData = new FormData(loginForm);
-    const data = new URLSearchParams(formData);
-
-    try {
-
-        const response = await fetch('/login', {
-            method: 'POST',
-            body: data,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
-
-        if (response.redirected) {
-
-            window.location.href = response.url;
-
-        } else {
-
-            errorMsg.style.display = 'block';
-
-            loginBtn.innerText = 'Login';
-            loginBtn.style.opacity = '1';
-        }
-
-    } catch (err) {
-
-        console.log(err);
-
-        errorMsg.innerText = '⚠ Server error';
-        errorMsg.style.display = 'block';
-
-        loginBtn.innerText = 'Login';
-        loginBtn.style.opacity = '1';
-    }
-});
-
-</script>
 
 </body>
 </html>
