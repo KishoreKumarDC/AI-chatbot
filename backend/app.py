@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from jinja2 import Environment, FileSystemLoader
 
 import os
 import json
@@ -10,6 +11,7 @@ import requests
 import subprocess
 import sys
 
+from dotenv import load_dotenv
 from groq import Groq
 from serpapi import GoogleSearch
 
@@ -25,18 +27,20 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 USER_FILE = os.path.join(BASE_DIR, "users.json")
 
-templates = Jinja2Templates(directory="templates", cache_size=0)
+# FIX: Use absolute path + disable Jinja2 cache completely
+_env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=True)
+_env.cache = None
+templates = Jinja2Templates(env=_env)
 
 app.mount(
     "/static",
     StaticFiles(directory=STATIC_DIR),
     name="static"
 )
+
 # =============================
 # ENV CONFIG
 # =============================
-from dotenv import load_dotenv
-import os
 
 load_dotenv()
 
@@ -46,7 +50,6 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 HF_API_KEY = os.getenv("HF_API_KEY")
 
-# HF_MODEL_URL = "https://api-inference.huggingface.co/models/google/vit-base-patch16-224"
 HF_MODEL_URL = "https://router.huggingface.co/hf-inference/models/google/vit-base-patch16-224"
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
@@ -94,20 +97,15 @@ def call_ollama(prompt: str):
             "prompt": prompt,
             "stream": False
         }
-
         r = requests.post(OLLAMA_URL, json=payload, timeout=60)
         return r.json().get("response", "").strip()
-
     except:
         return "⚠ Ollama not running."
 
 def call_groq(prompt: str):
-
     try:
-
         if not client:
             return "⚠ GROQ_API_KEY not set."
-
         response = client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[
@@ -117,17 +115,13 @@ def call_groq(prompt: str):
             temperature=0.6,
             max_tokens=500
         )
-
         return response.choices[0].message.content.strip()
-
     except Exception as e:
         return f"⚠ Groq error: {str(e)}"
 
 def generate_ai_response(prompt: str):
-
     if AI_PROVIDER == "ollama":
         return call_ollama(prompt)
-
     return call_groq(prompt)
 
 # =============================
@@ -135,71 +129,53 @@ def generate_ai_response(prompt: str):
 # =============================
 
 def recognize_image(image_bytes):
-
     try:
-
         headers = {
             "Authorization": f"Bearer {HF_API_KEY}",
             "Content-Type": "application/octet-stream"
         }
-
         response = requests.post(
             HF_MODEL_URL,
             headers=headers,
             data=image_bytes,
             timeout=30
         )
-
         if response.status_code != 200:
             print("HF Status:", response.status_code)
             print("HF Response:", response.text)
             return "object"
-
         result = response.json()
-
         if isinstance(result, list) and len(result) > 0:
             return result[0].get("label", "object")
-
         return "object"
-
     except Exception as e:
         print("HF error:", e)
         return "object"
-    
+
 # =============================
 # IMAGE SEARCH (SERPAPI)
 # =============================
 
 def search_images(query):
-
     try:
-
         params = {
             "engine": "google_images",
             "q": query,
             "api_key": SERPAPI_KEY,
             "num": 5
         }
-
         search = GoogleSearch(params)
         results = search.get_dict()
-
         images = []
-
         if "images_results" in results:
-
             for img in results["images_results"][:5]:
-
                 images.append({
                     "title": img.get("title"),
                     "thumbnail": img.get("thumbnail"),
                     "link": img.get("link")
                 })
-
         return images
-
     except Exception as e:
-
         print("Image search error:", e)
         return []
 
@@ -213,11 +189,7 @@ def login_page(request: Request):
 
 @app.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
-    return templates.TemplateResponse(
-        "register.html",
-        {"request": request}
-    )
-
+    return templates.TemplateResponse("register.html", {"request": request})
 
 @app.post("/register")
 def register(
@@ -225,28 +197,18 @@ def register(
     username: str = Form(...),
     password: str = Form(...)
 ):
-
-    # CLEAN INPUT
     username = username.strip().lower()
     password = password.strip()
 
     users = load_users()
 
-    # CHECK EXISTING USER
     if username in users:
         return templates.TemplateResponse(
             "register.html",
-            {
-                "request": request,
-                "error": "⚠ User already exists"
-            }
+            {"request": request, "error": "⚠ User already exists"}
         )
 
-    # SAVE USER
-    users[username] = {
-        "password": password
-    }
-
+    users[username] = {"password": password}
     save_users(users)
 
     return RedirectResponse("/", status_code=302)
@@ -257,53 +219,31 @@ def login(
     username: str = Form(...),
     password: str = Form(...)
 ):
-
-    # CLEAN INPUT
     username = username.strip().lower()
     password = password.strip()
 
     users = load_users()
 
-    # INVALID USERNAME
     if username not in users:
         return templates.TemplateResponse(
             "login.html",
-            {
-                "request": request,
-                "error": "❌ Invalid username or password"
-            }
+            {"request": request, "error": "❌ Invalid username or password"}
         )
 
-    # INVALID PASSWORD
     if users[username]["password"] != password:
         return templates.TemplateResponse(
             "login.html",
-            {
-                "request": request,
-                "error": "❌ Invalid username or password"
-            }
+            {"request": request, "error": "❌ Invalid username or password"}
         )
 
-    # SUCCESS LOGIN
-    response = RedirectResponse(
-        "/dashboard",
-        status_code=302
-    )
-
-    response.set_cookie(
-        key="user",
-        value=username,
-        httponly=True
-    )
-
+    response = RedirectResponse("/dashboard", status_code=302)
+    response.set_cookie(key="user", value=username, httponly=True)
     return response
 
 @app.get("/logout")
 def logout():
-
     response = RedirectResponse("/", status_code=302)
     response.delete_cookie("user")
-
     return response
 
 # =============================
@@ -312,12 +252,9 @@ def logout():
 
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request):
-
     user = request.cookies.get("user")
-
     if not user:
         return RedirectResponse("/", status_code=302)
-
     return templates.TemplateResponse(
         "dashboard.html",
         {"request": request, "username": user}
@@ -325,12 +262,9 @@ def dashboard(request: Request):
 
 @app.get("/chat-ui", response_class=HTMLResponse)
 def chat_ui(request: Request):
-
     user = request.cookies.get("user")
-
     if not user:
         return RedirectResponse("/", status_code=302)
-
     return templates.TemplateResponse("chat-ui.html", {"request": request})
 
 # =============================
@@ -339,17 +273,12 @@ def chat_ui(request: Request):
 
 @app.post("/chat")
 async def chat(data: dict):
-
     msg = data.get("message", "").strip()
-
     if not msg:
-        return {"reply": "Please enter message."}
-
+        return {"reply": "Please enter a message."}
     if msg.lower() in ["hi", "hello", "hey"]:
         return {"reply": "Hello 👋 How can I help you?"}
-
     reply = generate_ai_response(msg)
-
     return {"reply": reply}
 
 # =============================
@@ -358,15 +287,13 @@ async def chat(data: dict):
 
 @app.post("/image-chat")
 async def image_chat(file: UploadFile = File(...)):
-
     try:
-
         image_bytes = await file.read()
 
-        # Step 1 detect object
+        # Step 1: detect object
         label = recognize_image(image_bytes)
 
-        # Step 2 search similar images
+        # Step 2: search similar images
         images = search_images(label)
 
         titles = "\n".join([img["title"] for img in images if img["title"]])
@@ -381,7 +308,6 @@ Image titles:
 
 Explain what this object is.
 """
-
         explanation = generate_ai_response(prompt)
 
         return {
@@ -389,9 +315,7 @@ Explain what this object is.
             "images": images,
             "reply": explanation
         }
-
     except Exception as e:
-
         return {"reply": str(e)}
 
 # =============================
@@ -402,27 +326,17 @@ desktop_process = None
 
 @app.post("/launch-ai")
 def launch_ai():
-
     global desktop_process
-
     if desktop_process is None or desktop_process.poll() is not None:
-
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         script_path = os.path.join(project_root, "ai_chat.py")
-
         desktop_process = subprocess.Popen([sys.executable, script_path])
-
     return RedirectResponse("/dashboard", status_code=303)
 
 @app.post("/close-ai")
 def close_ai():
-
     global desktop_process
-
     if desktop_process and desktop_process.poll() is None:
-
         desktop_process.terminate()
         desktop_process = None
-
     return RedirectResponse("/dashboard", status_code=303)
-
