@@ -25,7 +25,7 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 USER_FILE = os.path.join(BASE_DIR, "users.json")
 
-templates = Jinja2Templates(directory=TEMPLATE_DIR)
+templates = Jinja2Templates(directory="templates", cache_size=0)
 
 app.mount(
     "/static",
