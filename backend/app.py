@@ -19,12 +19,13 @@ from serpapi import GoogleSearch
 
 app = FastAPI()
 
-BASE_DIR = "backend"
-TEMPLATE_DIR = f"{BASE_DIR}/templates"
-STATIC_DIR = f"{BASE_DIR}/static"
-USER_FILE = f"{BASE_DIR}/users.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-templates = Jinja2Templates(directory="backend/templates")
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+USER_FILE = os.path.join(BASE_DIR, "users.json")
+
+templates = Jinja2Templates(directory=TEMPLATE_DIR)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # =============================
